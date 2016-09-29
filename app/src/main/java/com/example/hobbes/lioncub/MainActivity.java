@@ -3,6 +3,7 @@ package com.example.hobbes.lioncub;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,7 +15,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.AWSMobileClient;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.example.hobbes.lioncub.dataStructures.Event;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +33,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                getApplicationContext(),
+                "us-east-1:42fadba5-47ab-4445-8c0f-0c28fb7d9add", // Identity Pool ID
+                Regions.US_EAST_1 // Region
+        );
+
+        AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
+        final DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
+
+
+
         Button buttonadd = (Button) findViewById(R.id.add);
         buttonadd.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                //Do stuff here
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        Event event = new Event("Test Event","Today","C2, Smuts Hall", "Hobbes, Sama", "Hobbes",true, AWSMobileClient.defaultMobileClient().getIdentityManager().getCachedUserID());
+                        mapper.save(event);
+                    }
+                };
+                Thread mythread = new Thread(runnable);
+                mythread.start();
+            }
+        });
+
+        Button buttonRem = (Button) findViewById(R.id.rem);
+        buttonRem.setOnClickListener(new Button.OnClickListener(){
+            public void onClick(View v) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        Event event = new Event(mapper.load(Event.class, AWSMobileClient.defaultMobileClient().getIdentityManager().getCachedUserID()));
+                        Log.i(TAG, event.toString());
+                    }
+                };
+                Thread mythread = new Thread(runnable);
+                mythread.start();
             }
         });
 
@@ -46,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     @Override

@@ -9,17 +9,18 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
  * MYRKEL002
  */
 
-@DynamoDBTable(tableName = "Events")
+@DynamoDBTable(tableName = "lioncubdev-mobilehub-1707615705-Events")
 public class Event {
     private String nameOfEvent;
-    private Date time;
+    private String time;
     private String place;
-    private ArrayList<People> people = new ArrayList<>();
-    private People owner;
+    private String people;
+    //private ArrayList<People> people = new ArrayList<>();
+    private String owner;
     private boolean pub;
     private String userId;
 
-    public Event(String nameOfEvent, Date time, String place, ArrayList<People> people, People owner, boolean pub, String userId) {
+    public Event(String nameOfEvent, String time, String place, String people, String owner, boolean pub, String userId) {
         this.nameOfEvent = nameOfEvent;
         this.time = time;
         this.place = place;
@@ -29,13 +30,17 @@ public class Event {
         this.userId = userId;
     }
 
+    public Event(Event e) {
+        this(e.nameOfEvent, e.time, e.place, e.people, e.owner, e.pub, e.userId);
+    }
+
     @DynamoDBIndexRangeKey(attributeName = "NameOfEvent")
     public String getNameOfEvent() {
         return nameOfEvent;
     }
 
     @DynamoDBAttribute(attributeName = "Time")
-    public Date getTime() {
+    public String getTime() {
         return time;
     }
 
@@ -45,12 +50,12 @@ public class Event {
     }
 
     @DynamoDBAttribute(attributeName = "People")
-    public ArrayList<People> getPeople() {
+    public String getPeople() {
         return people;
     }
 
     @DynamoDBAttribute(attributeName = "Owner")
-    public People getOwner() {
+    public String getOwner() {
         return owner;
     }
 
@@ -59,7 +64,7 @@ public class Event {
         return pub;
     }
 
-    @DynamoDBHashKey(attributeName = "userID")
+    @DynamoDBHashKey(attributeName = "userId")
     public String getUserId() {
         return userId;
     }
